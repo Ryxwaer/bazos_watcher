@@ -113,7 +113,8 @@ export class AppService {
   
     try {
       const result = await this.dataModel.deleteMany({
-        createdAt: { $lt: threeMonthsAgo }
+        createdAt: { $lt: threeMonthsAgo },
+        enabled: false,
       });
       this.logger.log('Deleted records count:', result.deletedCount);
       return result;
