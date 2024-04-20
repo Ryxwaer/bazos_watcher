@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   bazos-bot:
     container_name: bazos-bot

@@ -1,9 +1,37 @@
-# Stage 1: Build the application
+# Step 1: Use a node base image
 FROM node:16-alpine as builder
 
-# Set the working directory
+# Set working directory inside the container
 WORKDIR /usr/src/app
 
+# Copy package.json and package-lock.json (or yarn.lock if you use yarn)
+COPY package*.json ./
+
+# Install dependencies including 'devDependencies' required for building the app
+RUN npm install
+
+# Copy the rest of your app's source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Step 2: Prepare production image
+FROM node:16-alpine
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json from the builder stage
+COPY --from=builder /usr/src/app/package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Copy built assets from the builder stage
+COPY --from=builder /usr/src/app/dist ./dist
+
+# Use arguments to set environment variables
 ARG DB_URI
 ARG EMAIL_USER
 ARG EMAIL_PASS
@@ -13,35 +41,8 @@ ENV DB_URI=${DB_URI} \
     EMAIL_USER=${EMAIL_USER} \
     EMAIL_PASS=${EMAIL_PASS}
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies including 'devDependencies' for building the app
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Stage 2: Setup the production environment
-FROM node:16-alpine
-
-# Set the working directory
-WORKDIR /usr/src/app
-
-# Copy built assets from the builder stage
-COPY --from=builder /usr/src/app/dist ./dist
-
-# Copy package.json and package-lock.json
-COPY --from=builder /usr/src/app/package*.json ./
-
-# Install only production dependencies
-RUN npm install --only=production
-
-# Expose the port the app runs on
+# Expose port 3000
 EXPOSE 3000
 
-# Command to run the application
+# Command to run your app using Node.js
 CMD ["node", "dist/main"]
