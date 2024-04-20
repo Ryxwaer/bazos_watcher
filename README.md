@@ -1,1 +1,1 @@
-# bazos_watcher
+# bazos-scraper

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  bazos-bot:
+    container_name: bazos-bot
+    build:
+      context: .
+      args:
+        - DB_URI=${DB_URI}
+        - EMAIL_USER=${EMAIL_USER}
+        - EMAIL_PASS=${EMAIL_PASS}
+    pull_policy: build
+    image: bazos-bot:latest
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    networks:
+      - nginx-proxy-manager_default
+
+networks:
+  nginx-proxy-manager_default:
+    external: true
