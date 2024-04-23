@@ -52,12 +52,24 @@ export class AppService {
       return;
     }
 
+    // initial load
+    if (!existingIds.length) {
+      if (!await this.sendEmail(config, "New agent successfully creted!")) {
+        this.logger.error('Email sending failed');
+        return;
+      }
+      const result = await this.dataModel.insertMany(newItems);
+      this.logger.debug(`Inserted ${result.length} items`);
+      return;
+    }
+
     this.logger.log(`Found ${newItems.length} new items`);
     const message = "Nove inzeraty: \n\n" + newItems.map(item => `[${item.name}] ${item.price}\n${item.link}\n`).join('\n');
     this.logger.debug(message);
 
     // send message by email to the ryxwaer@gmail.com
     if (!await this.sendEmail(config, message)) {
+      this.logger.error('Email sending failed');
       return;
     }
 
